@@ -1,0 +1,91 @@
+# Ignore build results
+bin/
+obj/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Auto-generated files
+.vs/
+.vscode/
+.idea/
+*.ncrunch*
+*.ntvs_analysis.dat
+*.tfpt
+_ReSharper.*
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+_ReSharper.Caches/
+
+# Log files
+*.log
+*.tlog
+
+# Packages
+*.nupkg
+*.snupkg
+packages/
+# Uncomment if you have a NuGet Packages folder in the root.
+# /NuGetPackages/
+
+# Project-specific files
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Rider
+.idea/
+
+# Mono auto generated files
+mono_crash.*
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# VS Code directories
+.vscode/
+
+# Windows shortcuts
+*.lnk
+
+# macOS files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Azure Pipelines
+.azdo/
+
+# DotNet
+*.deps.json
+*.dll
+*.exe
+*.pdb
+*.runtimeconfig.json
+*.runtimeconfig.dev.json
+*.app
+*.appx
+*.appxsym
+*.appxupload
+*.msix
+*.msixupload
+
+# Rider
+.idea/
+*.sln.iml
+
+#config
+appsettings.json

@@ -2,7 +2,7 @@
 bin/
 obj/
 vs/
-TemplateEngineHost/
+TemplateEngineHost/vs/
 
 # User-specific files
 *.rsuser

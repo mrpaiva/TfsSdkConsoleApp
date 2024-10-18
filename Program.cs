@@ -13,6 +13,8 @@ namespace TfsSdkConsoleApp
 {
     internal class Program
     {
+        #region Inner Types
+
         public class Step
         {
             public string Action { get; set; }
@@ -26,16 +28,21 @@ namespace TfsSdkConsoleApp
             public List<Step> Steps { get; set; }
         }
 
+        public class TestCaseSource
+        {
+            public string Folder { get; set; }
+
+            public int[] WorkItems { get; set; }
+        }
+
+        #endregion Inner Types
+
         static void Main(string[] args)
         {
             // Carregar configurações do appsettings.json
             var config = LoadConfiguration();
 
-            var outputDirectory = config["OutputDirectory"];
-
-            var testCaseIdsFilePath = "testcaseids.txt";
-
-            int[] testCaseIds = LoadTestCaseIdsFromFile(testCaseIdsFilePath);
+            var rootDirectory = config["OutputDirectory"];
 
             Uri tfsUri = new Uri(config["TFSUri"]);
             TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(tfsUri);
@@ -43,44 +50,65 @@ namespace TfsSdkConsoleApp
 
             WorkItemStore workItemStore = tpc.GetService<WorkItemStore>();
 
-            if (!Directory.Exists(outputDirectory))
+            if (!Directory.Exists(rootDirectory))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(rootDirectory);
             }
 
             var allTestCases = new List<TestCase>();
+            var sources = LoadTestSources();
 
-            foreach (int testCaseId in testCaseIds)
+            foreach (var source in sources)
             {
-                WorkItem workItem = workItemStore.GetWorkItem(testCaseId);
+                var testCaseIds = source.WorkItems;
 
-                if (workItem.Type.Name == "Test Case")
+                var outputDirectory = rootDirectory + "/" + source.Folder;
+
+                if (!Directory.Exists(outputDirectory))
                 {
-                    string title = workItem.Title;
-                    string stepsXml = workItem.Fields["Microsoft.VSTS.TCM.Steps"].Value as string;
-                    var testCaseSteps = ConvertStepsXmlToList(stepsXml, workItemStore);
+                    Directory.CreateDirectory(outputDirectory);
+                }
 
-                    var testCaseData = new TestCase
+                foreach (int testCaseId in testCaseIds)
+                {
+                    try
                     {
-                        Id = workItem.Id,
-                        Title = title,
-                        Steps = testCaseSteps
-                    };
+                        var workItem = workItemStore.GetWorkItem(testCaseId);
 
-                    allTestCases.Add(testCaseData);
+                        if (workItem.Type.Name == "Test Case")
+                        {
+                            var title = workItem.Title;
+                            var stepsXml = workItem.Fields["Microsoft.VSTS.TCM.Steps"].Value as string;
+                            var testCaseSteps = ConvertStepsXmlToList(stepsXml, workItemStore);
+
+                            var testCaseData = new TestCase
+                            {
+                                Id = workItem.Id,
+                                Title = title,
+                                Steps = testCaseSteps
+                            };
+
+                            allTestCases.Add(testCaseData);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"O Work Item {testCaseId} não é um Test Case.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Erro Work Item {testCaseId}: {ex.Message}");
+                    }
                 }
-                else
-                {
-                    Console.WriteLine($"O Work Item {testCaseId} não é um Test Case.");
-                }
+
+                var jsonContent = JsonConvert.SerializeObject(allTestCases, Formatting.Indented);
+                var filePath = Path.Combine(outputDirectory, "testcases.json");
+
+                File.WriteAllText(filePath, jsonContent);
+
+                Console.WriteLine($"Arquivo JSON com todos os Test Cases salvo com sucesso: {filePath}");
             }
 
-            string jsonContent = JsonConvert.SerializeObject(allTestCases, Formatting.Indented);
-            string filePath = Path.Combine(outputDirectory, "all_testcases.json");
-
-            File.WriteAllText(filePath, jsonContent);
-
-            Console.WriteLine($"Arquivo JSON com todos os Test Cases salvo com sucesso: {filePath}");
             Console.ReadLine();
         }
 
@@ -91,6 +119,18 @@ namespace TfsSdkConsoleApp
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
             return configBuilder.Build();
+        }
+
+        private static List<TestCaseSource> LoadTestSources()
+        {
+            var sources = new List<TestCaseSource>();
+
+            var filePath = "test-cases-source.json";
+            var jsonContent = File.ReadAllText(filePath);
+
+            sources = JsonConvert.DeserializeObject<List<TestCaseSource>>(jsonContent);
+
+            return sources;
         }
 
         private static int[] LoadTestCaseIdsFromFile(string filePath)
@@ -146,12 +186,13 @@ namespace TfsSdkConsoleApp
 
         private static void ProcessComprefNode(XElement comprefNode, WorkItemStore workItemStore, List<Step> stepsList)
         {
-            string sharedStepRefId = comprefNode.Attribute("ref")?.Value;
+            var sharedStepRefId = comprefNode.Attribute("ref")?.Value;
 
             if (!string.IsNullOrEmpty(sharedStepRefId))
             {
-                int sharedStepId = int.Parse(sharedStepRefId);
-                WorkItem sharedStepWorkItem = workItemStore.GetWorkItem(sharedStepId);
+                var sharedStepId = int.Parse(sharedStepRefId);
+                var sharedStepWorkItem = workItemStore.GetWorkItem(sharedStepId);
+                var stepsXml = sharedStepWorkItem.Fields["Microsoft.VSTS.TCM.Steps"].Value as string;
 
                 if (sharedStepWorkItem.Type.Name == "Shared Steps")
                 {
@@ -161,6 +202,8 @@ namespace TfsSdkConsoleApp
                     {
                         Action = RemoveHtmlTags(sharedStepTitle)
                     });
+
+                    stepsList.AddRange(ConvertStepsXmlToList(stepsXml, workItemStore));
                 }
             }
 

@@ -5,7 +5,7 @@ Este projeto é um aplicativo console criado em C# para se conectar a um servidor
 ## Funcionalidades
 
 - Conexão com um servidor **TFS** para obter **Test Cases** usando o **TFS SDK**.
-- Leitura de IDs de **Test Cases** a partir de um arquivo de texto.
+- Leitura de IDs de **Test Cases** a partir de um arquivo de json.
 - Salvamento dos dados de **Test Cases** (ID, título e passos) em um único arquivo JSON.
 - Tratamento de **Shared Steps** dentro dos **Test Cases**.
 
@@ -23,4 +23,4 @@ Este projeto é um aplicativo console criado em C# para se conectar a um servidor
 ### Estrutura de Arquivos
 
 - **`appsettings.json`**: Configuração para o caminho de saída dos arquivos JSON.
-- **`testcaseids.txt`**: Arquivo de texto que contém os IDs dos **Test Cases**, um por linha.
+- **`test-cases-source.json`**: Arquivo de json que contém os IDs dos **Test Cases** e a pasta onde serão salvos.

@@ -22,5 +22,5 @@ Este projeto é um aplicativo console criado em C# para se conectar a um servidor
 
 ### Estrutura de Arquivos
 
-- **`appsettings.json`**: Configuração para o caminho de saída dos arquivos JSON.
+- **`appsettings.json`**: Configuração para o caminho de saída dos arquivos JSON e a URL font no TFS.
 - **`test-cases-source.json`**: Arquivo de json que contém os IDs dos **Test Cases** e a pasta onde serão salvos.

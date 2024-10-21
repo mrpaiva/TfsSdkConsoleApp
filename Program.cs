@@ -55,11 +55,12 @@ namespace TfsSdkConsoleApp
                 Directory.CreateDirectory(rootDirectory);
             }
 
-            var allTestCases = new List<TestCase>();
             var sources = LoadTestSources();
 
             foreach (var source in sources)
             {
+                var allTestCases = new List<TestCase>();
+
                 var testCaseIds = source.WorkItems;
 
                 var outputDirectory = rootDirectory + "/" + source.Folder;
